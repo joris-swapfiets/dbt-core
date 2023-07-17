@@ -9,6 +9,7 @@ from tests.functional.simple_snapshot.fixtures import (
     seeds__seed_newcol_csv,
     seeds__seed_csv,
     snapshots_pg__snapshot_sql,
+    snapshots_pg__snapshot_no_target_schema_sql,
     macros__test_no_overlaps_sql,
     macros_custom_snapshot__custom_sql,
     snapshots_pg_custom_namespaced__snapshot_sql,
@@ -121,6 +122,34 @@ class TestBasicSnapshot(Basic):
 class TestBasicRef(Basic):
     def test_basic_ref(self, project):
         ref_setup(project, num_snapshot_models=1)
+
+
+class TestBasicTargetSchemaConfig(Basic):
+    @pytest.fixture(scope="class")
+    def snapshots(self):
+        return {"snapshot.sql": snapshots_pg__snapshot_no_target_schema_sql}
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self, unique_schema):
+        return {
+            "snapshots": {
+                "test": {
+                    "target_schema": unique_schema + "_alt",
+                }
+            }
+        }
+
+    def test_target_schema(self, project):
+        manifest = run_dbt(["parse"])
+        print(f"\n\n--- node keys: {manifest.nodes.keys()}")
+        assert len(manifest.nodes) == 5
+        snapshot_id = "snapshot.test.snapshot_actual"
+        snapshot_node = manifest.nodes[snapshot_id]
+        assert snapshot_node.schema == f"{project.test_schema}_alt"
+        assert (
+            snapshot_node.relation_name
+            == f'"{project.database}"."{project.test_schema}_alt"."snapshot_actual"'
+        )
 
 
 class CustomNamespace:
