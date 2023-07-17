@@ -96,6 +96,18 @@ snapshots:
         owner: 'a_owner'
 """
 
+models__schema_with_target_schema_yml = """
+version: 2
+snapshots:
+  - name: snapshot_actual
+    tests:
+      - mutually_exclusive_ranges
+    config:
+      meta:
+        owner: 'a_owner'
+      target_schema: schema_from_schema_yml
+"""
+
 models__ref_snapshot_sql = """
 select * from {{ ref('snapshot_actual') }}
 """
