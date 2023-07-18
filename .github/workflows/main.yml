@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     env:
       TOXENV: "unit"
@@ -85,7 +85,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -155,7 +155,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-20.04]
         split-group: ${{ fromJson(needs.integration-metadata.outputs.split-groups) }}
         include: ${{ fromJson(needs.integration-metadata.outputs.include) }}
@@ -166,13 +166,18 @@ jobs:
       DBT_TEST_USER_2: dbt_test_user_2
       DBT_TEST_USER_3: dbt_test_user_3
       COVERAGE_FILE: ".coverage_${{ matrix.split-group }}"
+      DD_CIVISIBILITY_AGENTLESS_ENABLED: true
+      DD_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      DD_SITE: datadoghq.com
+      DD_ENV: ci
+      DD_SERVICE: ${{ github.event.repository.name }}
 
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -196,8 +201,7 @@ jobs:
           tox --version
 
       - name: Run tests
-        run: |
-          tox
+        run: tox -- --ddtrace
         env:
           PYTEST_ADDOPTS: ${{ format('-v --color=yes -n4 --csv integration_results_{0}.csv --splits {1} --group {2}', matrix.split-group, env.PYTHON_INTEGRATION_TEST_WORKERS, matrix.split-group) }}
 
@@ -236,7 +240,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 

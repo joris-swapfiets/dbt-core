@@ -1,6 +1,6 @@
 import pytest
 
-from dbt.exceptions import DbtRuntimeError
+from dbt.exceptions import DbtRuntimeError, Exception as DbtException
 from dbt.tests.util import run_dbt_and_capture, run_dbt
 from tests.functional.show.fixtures import (
     models__second_ephemeral_model,
@@ -8,6 +8,9 @@ from tests.functional.show.fixtures import (
     models__sample_model,
     models__second_model,
     models__ephemeral_model,
+    schema_yml,
+    models__sql_header,
+    private_model_yml,
 )
 
 
@@ -18,6 +21,7 @@ class TestShow:
             "sample_model.sql": models__sample_model,
             "second_model.sql": models__second_model,
             "ephemeral_model.sql": models__ephemeral_model,
+            "sql_header.sql": models__sql_header,
         }
 
     @pytest.fixture(scope="class")
@@ -69,9 +73,7 @@ class TestShow:
 
     def test_inline_fail(self, project):
         run_dbt(["build"])
-        with pytest.raises(
-            DbtRuntimeError, match="depends on a node named 'third_model' which was not found"
-        ):
+        with pytest.raises(DbtException, match="Error parsing inline query"):
             run_dbt(["show", "--inline", "select * from {{ ref('third_model') }}"])
 
     def test_ephemeral_model(self, project):
@@ -85,3 +87,69 @@ class TestShow:
             ["show", "--inline", models__second_ephemeral_model]
         )
         assert "col_hundo" in log_output
+
+    @pytest.mark.parametrize(
+        "args,expected",
+        [
+            ([], 5),  # default limit
+            (["--limit", 3], 3),  # fetch 3 rows
+            (["--limit", -1], 7),  # fetch all rows
+        ],
+    )
+    def test_limit(self, project, args, expected):
+        run_dbt(["build"])
+        dbt_args = ["show", "--inline", models__second_ephemeral_model, *args]
+        results, log_output = run_dbt_and_capture(dbt_args)
+        assert len(results.results[0].agate_table) == expected
+
+    def test_seed(self, project):
+        (results, log_output) = run_dbt_and_capture(["show", "--select", "sample_seed"])
+        assert "Previewing node 'sample_seed'" in log_output
+
+    def test_sql_header(self, project):
+        run_dbt(["build"])
+        (results, log_output) = run_dbt_and_capture(["show", "--select", "sql_header"])
+        assert "Asia/Kolkata" in log_output
+
+
+class TestShowModelVersions:
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "schema.yml": schema_yml,
+            "sample_model.sql": models__sample_model,
+            "sample_model_v2.sql": models__second_model,
+        }
+
+    @pytest.fixture(scope="class")
+    def seeds(self):
+        return {"sample_seed.csv": seeds__sample_seed}
+
+    def test_version_unspecified(self, project):
+        run_dbt(["build"])
+        (results, log_output) = run_dbt_and_capture(["show", "--select", "sample_model"])
+        assert "Previewing node 'sample_model.v1'" in log_output
+        assert "Previewing node 'sample_model.v2'" in log_output
+
+    def test_none(self, project):
+        run_dbt(["build"])
+        (results, log_output) = run_dbt_and_capture(["show", "--select", "sample_model.v2"])
+        assert "Previewing node 'sample_model.v1'" not in log_output
+        assert "Previewing node 'sample_model.v2'" in log_output
+
+
+class TestShowPrivateModel:
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "schema.yml": private_model_yml,
+            "private_model.sql": models__sample_model,
+        }
+
+    @pytest.fixture(scope="class")
+    def seeds(self):
+        return {"sample_seed.csv": seeds__sample_seed}
+
+    def test_version_unspecified(self, project):
+        run_dbt(["build"])
+        run_dbt(["show", "--inline", "select * from {{ ref('private_model') }}"])
