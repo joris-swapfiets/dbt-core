@@ -78,7 +78,6 @@ jobs:
 
     env:
       TOXENV: "unit"
-      PYTEST_ADDOPTS: "-v --color=yes --csv unit_results.csv"
 
     steps:
       - name: Check out the repository
@@ -106,11 +105,11 @@ jobs:
           CURRENT_DATE=$(date +'%Y-%m-%dT%H_%M_%S') # no colons allowed for artifacts
           echo "date=$CURRENT_DATE" >> $GITHUB_OUTPUT
 
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: unit_results_${{ matrix.python-version }}-${{ steps.date.outputs.date }}.csv
-          path: unit_results.csv
+      - name: Upload Unit Test Coverage to Codecov
+        if: ${{ matrix.python-version == '3.11' }}
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   integration-metadata:
     name: integration test metadata generation
@@ -218,17 +217,11 @@ jobs:
           name: logs_${{ matrix.python-version }}_${{ matrix.os }}_${{ steps.date.outputs.date }}
           path: ./logs
 
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: integration_results_${{ matrix.python-version }}_${{ matrix.os }}
-          path: integration_results_${{ matrix.split-group }}.csv
-
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: integration_coverage_${{ matrix.python-version }}_${{ matrix.os }}
-          path: .coverage_${{ matrix.split-group }}
+      - name: Upload Integration Test Coverage to Codecov
+        if: ${{ matrix.python-version == '3.11' }}
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     name: build packages
