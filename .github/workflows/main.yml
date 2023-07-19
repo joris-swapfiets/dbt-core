@@ -202,7 +202,7 @@ jobs:
       - name: Run tests
         run: tox -- --ddtrace
         env:
-          PYTEST_ADDOPTS: ${{ format('-v --color=yes -n4 --csv integration_results_{0}.csv --splits {1} --group {2}', matrix.split-group, env.PYTHON_INTEGRATION_TEST_WORKERS, matrix.split-group) }}
+          PYTEST_ADDOPTS: ${{ format('--splits {0} --group {1}', env.PYTHON_INTEGRATION_TEST_WORKERS, matrix.split-group) }}
 
       - name: Get current date
         if: always()
