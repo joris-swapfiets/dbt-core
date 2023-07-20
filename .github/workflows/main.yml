@@ -128,6 +128,7 @@ jobs:
           done
           MATRIX_JSON="${MATRIX_JSON//\"\"/\", \"}"
           MATRIX_JSON+="]"
+          echo "split-groups=${MATRIX_JSON}"
           echo "split-groups=${MATRIX_JSON}" >> $GITHUB_OUTPUT
 
       - name: generate include
@@ -142,6 +143,7 @@ jobs:
           done
           INCLUDE_GROUPS=$(echo $INCLUDE_GROUPS | sed 's/,*$//g')
           INCLUDE_GROUPS+="]"
+          echo "include=${INCLUDE_GROUPS}"
           echo "include=${INCLUDE_GROUPS}" >> $GITHUB_OUTPUT
 
   integration:
