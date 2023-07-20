@@ -36,7 +36,7 @@ defaults:
 # top-level adjustments can be made here
 env:
   # number of parallel processes to spawn for python integratino testing
-  PYTHON_INTEGRATION_TEST_WORKERS: 7
+  PYTHON_INTEGRATION_TEST_WORKERS: 3
 
 jobs:
   code-quality:
@@ -166,7 +166,6 @@ jobs:
       DBT_TEST_USER_1: dbt_test_user_1
       DBT_TEST_USER_2: dbt_test_user_2
       DBT_TEST_USER_3: dbt_test_user_3
-      COVERAGE_FILE: ".coverage_${{ matrix.split-group }}"
       DD_CIVISIBILITY_AGENTLESS_ENABLED: true
       DD_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       DD_SITE: datadoghq.com

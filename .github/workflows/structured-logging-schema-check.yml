@@ -21,7 +21,7 @@ permissions: read-all
 # top-level adjustments can be made here
 env:
   # number of parallel processes to spawn for python testing
-  PYTHON_TEST_WORKERS: 5
+  PYTHON_INTEGRATION_TEST_WORKERS: 3
 
 jobs:
   integration-metadata:
@@ -35,7 +35,7 @@ jobs:
         id: generate-split-groups
         run: |
           MATRIX_JSON="["
-          for B in $(seq 1 ${{ env.PYTHON_TEST_WORKERS }}); do
+          for B in $(seq 1 ${{ env.PYTHON_INTEGRATION_TEST_WORKERS }}); do
               MATRIX_JSON+=$(sed 's/^/"/;s/$/"/' <<< "${B}")
           done
           MATRIX_JSON="${MATRIX_JSON//\"\"/\", \"}"
@@ -94,4 +94,4 @@ jobs:
       - name: Run integration tests
         run: tox -e integration -- -nauto
         env:
-          PYTEST_ADDOPTS: ${{ format('--splits {0} --group {1}', env.PYTHON_TEST_WORKERS, matrix.split-group) }}
+          PYTEST_ADDOPTS: ${{ format('--splits {0} --group {1}', env.PYTHON_INTEGRATION_TEST_WORKERS, matrix.split-group) }}
