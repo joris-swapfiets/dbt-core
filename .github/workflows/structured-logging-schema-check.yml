@@ -46,9 +46,11 @@ jobs:
   test-schema:
     name: Test Log Schema
     runs-on: ubuntu-20.04
+    timeout-minutes: 30
     needs:
       - integration-metadata
     strategy:
+      fail-fast: false
       matrix:
         split-group: ${{ fromJson(needs.integration-metadata.outputs.split-groups) }}
     env:
@@ -95,3 +97,10 @@ jobs:
         run: tox -e integration -- -nauto
         env:
           PYTEST_ADDOPTS: ${{ format('--splits {0} --group {1}', env.PYTHON_INTEGRATION_TEST_WORKERS, matrix.split-group) }}
+  test-schema-report:
+    name: Log Schema Test Suite
+    needs: test-schema
+    steps:
+      - name: "[Notification] Log test suite passes"
+        run: |
+          echo "::notice title="Log test suite passes""

@@ -150,7 +150,7 @@ jobs:
     name: (${{ matrix.split-group }}) integration test / python ${{ matrix.python-version }} / ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
+    timeout-minutes: 30
     needs:
       - integration-metadata
     strategy:
@@ -223,6 +223,13 @@ jobs:
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  integration-report:
+    name: integration test suite
+    needs: integration
+    steps:
+      - name: "[Notification] Integration test suite passes"
+        run: |
+          echo "::notice title="Integration test suite passes""
 
   build:
     name: build packages
