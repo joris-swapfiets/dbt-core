@@ -229,7 +229,7 @@ jobs:
     steps:
       - name: "[Notification] Integration test suite passes"
         run: |
-          echo "::notice title="Integration test suite passes""
+          echo "test"
 
   build:
     name: build packages

@@ -103,4 +103,4 @@ jobs:
     steps:
       - name: "[Notification] Log test suite passes"
         run: |
-          echo "::notice title="Log test suite passes""
+          echo "test"
