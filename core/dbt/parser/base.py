@@ -280,7 +280,7 @@ class ConfiguredParser(
         self, parsed_node: IntermediateNode, config_dict: Dict[str, Any]
     ) -> None:
 
-        if parsed_node.resource_type == "snapshot":
+        if parsed_node.resource_type == NodeType.Snapshot:
             if "target_database" in config_dict and config_dict["target_database"]:
                 parsed_node.database = config_dict["target_database"]
             if "target_schema" in config_dict and config_dict["target_schema"]:
