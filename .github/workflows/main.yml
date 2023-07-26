@@ -35,7 +35,7 @@ defaults:
 
 # top-level adjustments can be made here
 env:
-  # number of parallel processes to spawn for python integratino testing
+  # number of parallel processes to spawn for python integration testing
   PYTHON_INTEGRATION_TEST_WORKERS: 5
 
 jobs:
