@@ -97,6 +97,7 @@ jobs:
         run: tox -e integration -- -nauto
         env:
           PYTEST_ADDOPTS: ${{ format('--splits {0} --group {1}', env.PYTHON_INTEGRATION_TEST_WORKERS, matrix.split-group) }}
+
   test-schema-report:
     name: Log Schema Test Suite
     runs-on: ubuntu-latest
